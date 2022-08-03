@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func DatabaseConnection() *services.UserService {
+func DatabaseConnection() (*services.UserService, *services.MessageService) {
 	dsn := "root:rootroot@tcp(127.0.0.1:3306)/myProfile?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -23,7 +23,10 @@ func DatabaseConnection() *services.UserService {
 	db.AutoMigrate(&models.Participant{})
 
 	userRepository := repositories.NewUserRepository(db)
-	userService := services.NewService(userRepository)
+	userService := services.NewUserService(userRepository)
 
-	return userService
+	messageRepository := repositories.NewMessageRepository(db)
+	messageService := services.NewMessageService(messageRepository)
+
+	return userService, messageService
 }

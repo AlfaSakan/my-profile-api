@@ -11,10 +11,13 @@ import (
 func main() {
 	router := gin.Default()
 
-	userService := database.DatabaseConnection()
+	userService, messageService := database.DatabaseConnection()
 
 	userHandlers := handlers.NewUserHandler(userService)
 	routes.RouteUser(router, userHandlers)
+
+	messageHandlers := handlers.NewMessageHandler(messageService)
+	routes.RouteMessage(router, messageHandlers)
 
 	router.Run(":8081")
 }

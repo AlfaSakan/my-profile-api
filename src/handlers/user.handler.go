@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"myProfileApi/src/models"
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
 	"net/http"
@@ -23,7 +22,7 @@ func (userHandler *UserHandler) GetUserHandler(ctx *gin.Context) {
 	userId := ctx.Param("userId")
 	userIdInt, errConvert := strconv.Atoi(userId)
 	if errConvert != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response[models.User]{
+		ctx.JSON(http.StatusBadRequest, schemas.Response{
 			ErrorMessage: errConvert.Error(),
 			Status:       http.StatusBadRequest,
 		})
@@ -32,14 +31,14 @@ func (userHandler *UserHandler) GetUserHandler(ctx *gin.Context) {
 
 	user, errService := userHandler.userService.FindUserById(userIdInt)
 	if errService != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response[models.User]{
+		ctx.JSON(http.StatusBadRequest, schemas.Response{
 			ErrorMessage: errService.Error(),
 			Status:       http.StatusBadRequest,
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, schemas.Response[models.User]{
+	ctx.JSON(http.StatusOK, schemas.Response{
 		ErrorMessage: "",
 		Status:       http.StatusOK,
 		Data:         user,
@@ -54,7 +53,7 @@ func (userHandler *UserHandler) PostUserHandler(ctx *gin.Context) {
 		for _, e := range err.(validator.ValidationErrors) {
 			// errorMessage := fmt.Sprintf("Error on field %s, condition: %s", e.Field(), e.ActualTag())
 			// ctx.JSON(http.StatusBadRequest, errorMessage)
-			ctx.JSON(http.StatusBadRequest, schemas.Response[string]{
+			ctx.JSON(http.StatusBadRequest, schemas.Response{
 				Status:       http.StatusBadRequest,
 				ErrorMessage: e.Error(),
 				Data:         "",
@@ -65,14 +64,14 @@ func (userHandler *UserHandler) PostUserHandler(ctx *gin.Context) {
 
 	response, errorService := userHandler.userService.CreateUser(request)
 	if errorService != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response[models.User]{
+		ctx.JSON(http.StatusBadRequest, schemas.Response{
 			ErrorMessage: errorService.Error(),
 			Status:       http.StatusBadRequest,
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, schemas.Response[models.User]{
+	ctx.JSON(http.StatusCreated, schemas.Response{
 		Status:       http.StatusCreated,
 		ErrorMessage: "",
 		Data:         response,
@@ -85,7 +84,7 @@ func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 	userId := ctx.Param("userId")
 	userIdInt, errConvert := strconv.Atoi(userId)
 	if errConvert != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response[models.User]{
+		ctx.JSON(http.StatusBadRequest, schemas.Response{
 			ErrorMessage: errConvert.Error(),
 			Status:       http.StatusBadRequest,
 		})
@@ -95,7 +94,7 @@ func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
-			ctx.JSON(http.StatusBadRequest, schemas.Response[string]{
+			ctx.JSON(http.StatusBadRequest, schemas.Response{
 				Status:       http.StatusBadRequest,
 				ErrorMessage: e.Error(),
 				Data:         "",
@@ -106,14 +105,14 @@ func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 
 	response, errorService := userHandler.userService.UpdateUser(request, userIdInt)
 	if errorService != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response[models.User]{
+		ctx.JSON(http.StatusBadRequest, schemas.Response{
 			ErrorMessage: errorService.Error(),
 			Status:       http.StatusBadRequest,
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, schemas.Response[models.User]{
+	ctx.JSON(http.StatusOK, schemas.Response{
 		Status:       http.StatusOK,
 		ErrorMessage: "",
 		Data:         response,

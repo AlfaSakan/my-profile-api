@@ -1,7 +1,7 @@
 package schemas
 
-type Response[T any] struct {
+type Response struct {
 	Status       int
 	ErrorMessage string
-	Data         T
+	Data         interface{}
 }
