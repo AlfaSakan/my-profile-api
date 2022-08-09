@@ -9,6 +9,3 @@ type ChatRoom struct {
 	CreatedAt   int64  `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt   int64  `json:"updated_at" gorm:"autoUpdateTime:milli"`
 }
-
-// UserId      uint   `json:"user_ids" gorm:"not null"`
-// IsAdmin     bool   `json:"is_admin"`

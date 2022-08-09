@@ -11,13 +11,18 @@ import (
 func main() {
 	router := gin.Default()
 
-	userService, messageService := database.DatabaseConnection()
+	v1 := router.Group("/v1")
+
+	userService, messageService, chatRoomService, participantService := database.DatabaseConnection()
 
 	userHandlers := handlers.NewUserHandler(userService)
-	routes.RouteUser(router, userHandlers)
+	routes.RouteUser(v1, userHandlers)
 
 	messageHandlers := handlers.NewMessageHandler(messageService)
-	routes.RouteMessage(router, messageHandlers)
+	routes.RouteMessage(v1, messageHandlers)
+
+	chatRoomHandlers := handlers.NewChatRoomHandler(chatRoomService, participantService)
+	routes.ChatRoomRoute(v1, chatRoomHandlers)
 
 	router.Run(":8081")
 }

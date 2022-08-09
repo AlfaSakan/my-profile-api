@@ -7,8 +7,9 @@ import (
 )
 
 type IParticipantRepository interface {
-	GetAllParticipant(int) ([]models.Participant, error)
-	GetAllChatRoom(int) ([]models.Participant, error)
+	FindAllParticipant(int) ([]models.Participant, error)
+	FindAllChatRoom(int) ([]models.Participant, error)
+	CreateParticipant(models.Participant) (models.Participant, error)
 }
 
 type ParticipantRepository struct {
@@ -19,18 +20,24 @@ func NewParticipantRepository(db *gorm.DB) *ParticipantRepository {
 	return &ParticipantRepository{db}
 }
 
-func (participantRepository *ParticipantRepository) GetAllParticipant(chatRoomId int) ([]models.Participant, error) {
+func (participantRepository *ParticipantRepository) FindAllParticipant(chatRoomId int) ([]models.Participant, error) {
 	var participants []models.Participant
 
-	error := participantRepository.db.Where(&models.Participant{ChatRoomId: uint(chatRoomId)}).Find(&participants).Error
+	err := participantRepository.db.Where(&models.Participant{ChatRoomId: uint(chatRoomId)}).Find(&participants).Error
 
-	return participants, error
+	return participants, err
 }
 
-func (participantRepository *ParticipantRepository) GetAllChatRoom(userId int) ([]models.Participant, error) {
+func (participantRepository *ParticipantRepository) FindAllChatRoom(userId int) ([]models.Participant, error) {
 	var participants []models.Participant
 
-	error := participantRepository.db.Where(&models.Participant{ChatRoomId: uint(userId)}).Find(&participants).Error
+	err := participantRepository.db.Where(&models.Participant{UserId: uint(userId)}).Find(&participants).Error
 
-	return participants, error
+	return participants, err
+}
+
+func (participantRepository *ParticipantRepository) CreateParticipant(participant *models.Participant) error {
+	err := participantRepository.db.Create(participant).Error
+
+	return err
 }

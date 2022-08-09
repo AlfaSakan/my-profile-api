@@ -1,7 +1,7 @@
 package schemas
 
 type Response struct {
-	Status       int
-	ErrorMessage string
-	Data         interface{}
+	Status  int
+	Message string
+	Data    interface{}
 }
