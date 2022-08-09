@@ -3,8 +3,8 @@ package handlers
 import (
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
+	"myProfileApi/src/utils"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -19,102 +19,78 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 }
 
 func (userHandler *UserHandler) GetUserHandler(ctx *gin.Context) {
-	userId := ctx.Param("userId")
-	userIdInt, errConvert := strconv.Atoi(userId)
-	if errConvert != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response{
-			ErrorMessage: errConvert.Error(),
-			Status:       http.StatusBadRequest,
-		})
-		return
-	}
+	userId := utils.ConvertParamToInt(ctx, "userId")
 
-	user, errService := userHandler.userService.FindUserById(userIdInt)
+	response := new(schemas.Response)
+
+	user, errService := userHandler.userService.FindUserById(userId)
 	if errService != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response{
-			ErrorMessage: errService.Error(),
-			Status:       http.StatusBadRequest,
-		})
+		response.Message = errService.Error()
+		response.Status = http.StatusBadRequest
+		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, schemas.Response{
-		ErrorMessage: "",
-		Status:       http.StatusOK,
-		Data:         user,
-	})
+	response.Message = ""
+	response.Status = http.StatusOK
+	response.Data = user
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (userHandler *UserHandler) PostUserHandler(ctx *gin.Context) {
 	var request schemas.UserRequest
+	response := new(schemas.Response)
 
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
-			// errorMessage := fmt.Sprintf("Error on field %s, condition: %s", e.Field(), e.ActualTag())
-			// ctx.JSON(http.StatusBadRequest, errorMessage)
-			ctx.JSON(http.StatusBadRequest, schemas.Response{
-				Status:       http.StatusBadRequest,
-				ErrorMessage: e.Error(),
-				Data:         "",
-			})
+			response.Status = http.StatusBadRequest
+			response.Message = e.Error()
+			ctx.JSON(http.StatusBadRequest, response)
 			return
 		}
 	}
 
-	response, errorService := userHandler.userService.CreateUser(request)
+	responseService, errorService := userHandler.userService.CreateUser(request)
 	if errorService != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response{
-			ErrorMessage: errorService.Error(),
-			Status:       http.StatusBadRequest,
-		})
+		response.Message = errorService.Error()
+		response.Status = http.StatusBadRequest
+		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, schemas.Response{
-		Status:       http.StatusCreated,
-		ErrorMessage: "",
-		Data:         response,
-	})
+	response.Status = http.StatusCreated
+	response.Message = ""
+	response.Data = responseService
+	ctx.JSON(http.StatusCreated, response)
 }
 
 func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 	var request schemas.UpdateUserRequest
+	response := new(schemas.Response)
 
-	userId := ctx.Param("userId")
-	userIdInt, errConvert := strconv.Atoi(userId)
-	if errConvert != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response{
-			ErrorMessage: errConvert.Error(),
-			Status:       http.StatusBadRequest,
-		})
-		return
-	}
+	userId := utils.ConvertParamToInt(ctx, "userId")
 
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
-			ctx.JSON(http.StatusBadRequest, schemas.Response{
-				Status:       http.StatusBadRequest,
-				ErrorMessage: e.Error(),
-				Data:         "",
-			})
+			response.Status = http.StatusBadRequest
+			response.Message = e.Error()
+			ctx.JSON(http.StatusBadRequest, response)
 			return
 		}
 	}
 
-	response, errorService := userHandler.userService.UpdateUser(request, userIdInt)
+	_, errorService := userHandler.userService.UpdateUser(request, userId)
 	if errorService != nil {
-		ctx.JSON(http.StatusBadRequest, schemas.Response{
-			ErrorMessage: errorService.Error(),
-			Status:       http.StatusBadRequest,
-		})
+		response.Message = errorService.Error()
+		response.Status = http.StatusBadRequest
+		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, schemas.Response{
-		Status:       http.StatusOK,
-		ErrorMessage: "",
-		Data:         response,
-	})
+	response.Status = http.StatusOK
+	response.Message = "OK"
+	response.Data = "Success Updated"
+	ctx.JSON(http.StatusOK, response)
 }

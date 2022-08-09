@@ -7,7 +7,6 @@ import (
 )
 
 type IUserRepository interface {
-	// FindAllUser() ([]models.User, error)
 	FindUserById(userId int) (models.User, error)
 	CreateUser(models.User) (models.User, error)
 	UpdateUser(models.User, int) (models.User, error)
@@ -36,7 +35,7 @@ func (repository *UserRepository) CreateUser(user models.User) (models.User, err
 }
 
 func (repository *UserRepository) UpdateUser(user models.User, userId int) (models.User, error) {
-	err := repository.db.Where(models.User{UserId: uint(userId)}).Updates(&user).Error
+	err := repository.db.Where(&models.User{UserId: uint(userId)}).Updates(&user).Error
 
 	return user, err
 }

@@ -7,7 +7,6 @@ import (
 )
 
 type IUserService interface {
-	// FindAllUser() ([]models.User, error)
 	FindUserById(userId int) (models.User, error)
 	CreateUser(models.User) (models.User, error)
 	UpdateUser(models.User, int) (models.User, error)
