@@ -8,10 +8,10 @@ import (
 
 const MESSAGE_ROUTE = "/message"
 
-func RouteMessage(router *gin.Engine, handler *handlers.MessageHandler) {
+func RouteMessage(router *gin.RouterGroup, handler *handlers.MessageHandler) {
 	router.GET(MESSAGE_ROUTE+"/:chatRoomId", handler.GetMessageHandler)
 
 	router.POST(MESSAGE_ROUTE, handler.PostMessageHandler)
 
-	router.PATCH(MESSAGE_ROUTE+"/:userId", handler.PatchMessageHandler)
+	router.PATCH(MESSAGE_ROUTE+"/:messageId", handler.PatchMessageHandler)
 }

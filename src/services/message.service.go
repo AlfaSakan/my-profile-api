@@ -9,6 +9,7 @@ import (
 type IMessageService interface {
 	CreateMessage(schemas.MessageRequest) (models.Message, error)
 	FindMessageByChatRoomId(int) ([]models.Message, error)
+	UpdateMessage(*models.Message, int) error
 }
 
 type MessageService struct {
@@ -19,7 +20,7 @@ func NewMessageService(messageRepository *repositories.MessageRepository) *Messa
 	return &MessageService{messageRepository}
 }
 
-func (messageService *MessageService) FindMessageByChatRoomId(chatRoomId int) ([]models.Message, error) {
+func (messageService *MessageService) FindMessageByChatRoomId(chatRoomId int) (*[]models.Message, error) {
 	messages, err := messageService.messageRepository.FindMessagesByChatRoomId(chatRoomId)
 
 	return messages, err
@@ -36,4 +37,14 @@ func (messageService *MessageService) CreateMessage(messageRequest schemas.Messa
 	message, err := messageService.messageRepository.CreateMessage(data)
 
 	return message, err
+}
+
+func (messageService *MessageService) UpdateMessage(messageRequest *schemas.MessageUpdate, messageId int) error {
+	message := &models.Message{
+		StatusMessage: messageRequest.StatusMessage,
+	}
+
+	err := messageService.messageRepository.UpdateMessagesByMessageId(message, messageId)
+
+	return err
 }

@@ -7,5 +7,5 @@ type Message struct {
 	StatusMessage string `json:"status" gorm:"default:active;size:50"`
 	Type          string `json:"type" gorm:"size:50;default:chat"`
 	Message       string `json:"message"`
-	CreatedAt     int64  `json:"created_at" gorm:"autoCreateTime"`
+	CreatedAt     int64  `json:"created_at" gorm:"autoCreateTime:milli"`
 }

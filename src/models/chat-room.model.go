@@ -6,6 +6,6 @@ type ChatRoom struct {
 	Description string `json:"description" gorm:"size:200"`
 	Name        string `json:"name" gorm:"size:50"`
 	Type        string `json:"type"`
-	CreatedAt   int64  `json:"created_at" gorm:"autoCreateTime"`
+	CreatedAt   int64  `json:"created_at" gorm:"autoCreateTime:milli"`
 	UpdatedAt   int64  `json:"updated_at" gorm:"autoUpdateTime:milli"`
 }
