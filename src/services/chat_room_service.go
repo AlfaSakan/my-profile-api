@@ -8,20 +8,19 @@ import (
 
 type IChatRoomService interface {
 	FindChatRoomById(int) (models.ChatRoom, error)
-	CreateChatRoom(models.ChatRoom) (models.ChatRoom, error)
-	UpdateChatRoom(models.ChatRoom, int) error
+	CreateChatRoom(schemas.ChatRoomRequest) (models.ChatRoom, error)
+	UpdateChatRoom(*schemas.ChatRoomRequest, int) error
 	RemoveChatRoom(int) error
-
-	FindAllChatRoomByUserId(int) ([]models.ChatRoom, error)
-	FindAllParticipantByChatRoomId(int) ([]models.Participant, error)
+	FindAllChatRoomByUserId(int) ([]schemas.ChatRoomWithPartisipants, error)
+	FindAllParticipantByChatRoomId(int) ([]uint, error)
 }
 
 type ChatRoomService struct {
-	chatRoomRepository    *repositories.ChatRoomRepository
-	participantRepository *repositories.ParticipantRepository
+	chatRoomRepository    repositories.IChatRoomRepository
+	participantRepository repositories.IParticipantRepository
 }
 
-func NewChatRoomService(chatRoomRepository *repositories.ChatRoomRepository, participantRepository *repositories.ParticipantRepository) *ChatRoomService {
+func NewChatRoomService(chatRoomRepository repositories.IChatRoomRepository, participantRepository repositories.IParticipantRepository) *ChatRoomService {
 	return &ChatRoomService{chatRoomRepository, participantRepository}
 }
 
@@ -32,7 +31,7 @@ func (chatRoomService *ChatRoomService) FindChatRoomById(chatRoomId int) (models
 }
 
 func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.ChatRoomRequest) (models.ChatRoom, error) {
-	request := models.ChatRoom{
+	request := &models.ChatRoom{
 		ImageUrl:    chatRoomRequest.ImageUrl,
 		Description: chatRoomRequest.Description,
 		Name:        chatRoomRequest.Name,
@@ -41,7 +40,7 @@ func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.C
 
 	chatRoom, err := chatRoomService.chatRoomRepository.CreateChatRoom(request)
 
-	return chatRoom, err
+	return *chatRoom, err
 }
 
 func (chatRoomService *ChatRoomService) UpdateChatRoom(chatRoomRequest *schemas.ChatRoomRequest, chatRoomId int) error {

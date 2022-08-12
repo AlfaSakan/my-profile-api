@@ -8,15 +8,15 @@ import (
 
 type IUserService interface {
 	FindUserById(userId int) (models.User, error)
-	CreateUser(models.User) (models.User, error)
-	UpdateUser(models.User, int) (models.User, error)
+	CreateUser(schemas.UserRequest) (models.User, error)
+	UpdateUser(schemas.UpdateUserRequest, int) (models.User, error)
 }
 
 type UserService struct {
-	userRepository *repositories.UserRepository
+	userRepository repositories.IUserRepository
 }
 
-func NewUserService(userRepository *repositories.UserRepository) *UserService {
+func NewUserService(userRepository repositories.IUserRepository) *UserService {
 	return &UserService{userRepository}
 }
 

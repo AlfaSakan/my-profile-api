@@ -11,11 +11,11 @@ import (
 )
 
 type ChatRoomHandler struct {
-	chatRoomService    *services.ChatRoomService
-	participantService *services.ParticipantService
+	chatRoomService    services.IChatRoomService
+	participantService services.IParticipantService
 }
 
-func NewChatRoomHandler(chatRoomService *services.ChatRoomService, participantService *services.ParticipantService) *ChatRoomHandler {
+func NewChatRoomHandler(chatRoomService services.IChatRoomService, participantService services.IParticipantService) *ChatRoomHandler {
 	return &ChatRoomHandler{chatRoomService, participantService}
 }
 

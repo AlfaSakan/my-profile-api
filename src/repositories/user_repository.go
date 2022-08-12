@@ -23,13 +23,13 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (repository *UserRepository) FindUserById(userId int) (models.User, error) {
 	var user models.User
 
-	err := repository.db.Find(&user, userId).Error
+	err := repository.db.Debug().Find(&user, userId).Error
 
 	return user, err
 }
 
 func (repository *UserRepository) CreateUser(user models.User) (models.User, error) {
-	err := repository.db.Create(&user).Error
+	err := repository.db.Debug().Create(&user).Error
 
 	return user, err
 }

@@ -7,9 +7,10 @@ import (
 )
 
 type IChatRoomRepository interface {
-	FindAllChatRoomByUserId(int) ([]models.ChatRoom, error)
 	CreateChatRoom(*models.ChatRoom) (*models.ChatRoom, error)
 	FindChatRoomById(int) (models.ChatRoom, error)
+	RemoveChatRoomById(int) error
+	UpdateChatRoomById(*models.ChatRoom, int) error
 }
 
 type ChatRoomRepository struct {
@@ -20,7 +21,7 @@ func NewChatRoomRepository(db *gorm.DB) *ChatRoomRepository {
 	return &ChatRoomRepository{db}
 }
 
-func (chatRoomRepository *ChatRoomRepository) CreateChatRoom(chatRoom models.ChatRoom) (models.ChatRoom, error) {
+func (chatRoomRepository *ChatRoomRepository) CreateChatRoom(chatRoom *models.ChatRoom) (*models.ChatRoom, error) {
 	err := chatRoomRepository.db.Create(&chatRoom).Error
 
 	return chatRoom, err

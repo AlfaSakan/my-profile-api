@@ -7,7 +7,7 @@ import (
 )
 
 type IMessageRepository interface {
-	FindMessagesByChatRoomId(int) ([]models.Message, error)
+	FindMessagesByChatRoomId(int) (*[]models.Message, error)
 	FindMessageById(messageId int) (models.Message, error)
 	CreateMessage(models.Message) (models.Message, error)
 	UpdateMessagesByMessageId(*models.Message, int) error

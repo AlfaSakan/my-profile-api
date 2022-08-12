@@ -6,14 +6,14 @@ import (
 )
 
 type IParticipantService interface {
-	CreateParticipant(*models.Participant) error
+	CreateParticipant(int, uint) error
 }
 
 type ParticipantService struct {
-	participantRepository *repositories.ParticipantRepository
+	participantRepository repositories.IParticipantRepository
 }
 
-func NewParticipantService(participantRepository *repositories.ParticipantRepository) *ParticipantService {
+func NewParticipantService(participantRepository repositories.IParticipantRepository) *ParticipantService {
 	return &ParticipantService{participantRepository}
 }
 

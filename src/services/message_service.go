@@ -7,16 +7,16 @@ import (
 )
 
 type IMessageService interface {
-	CreateMessage(schemas.MessageRequest) (models.Message, error)
-	FindMessageByChatRoomId(int) ([]models.Message, error)
-	UpdateMessage(*models.Message, int) error
+	CreateMessage(schemas.MessageRequest) (*models.Message, error)
+	FindMessageByChatRoomId(int) (*[]models.Message, error)
+	UpdateMessage(*schemas.MessageUpdate, int) error
 }
 
 type MessageService struct {
-	messageRepository *repositories.MessageRepository
+	messageRepository repositories.IMessageRepository
 }
 
-func NewMessageService(messageRepository *repositories.MessageRepository) *MessageService {
+func NewMessageService(messageRepository repositories.IMessageRepository) *MessageService {
 	return &MessageService{messageRepository}
 }
 
@@ -26,7 +26,7 @@ func (messageService *MessageService) FindMessageByChatRoomId(chatRoomId int) (*
 	return messages, err
 }
 
-func (messageService *MessageService) CreateMessage(messageRequest schemas.MessageRequest) (models.Message, error) {
+func (messageService *MessageService) CreateMessage(messageRequest schemas.MessageRequest) (*models.Message, error) {
 	data := models.Message{
 		Message:    messageRequest.Message,
 		UserId:     messageRequest.UserId,
@@ -36,7 +36,7 @@ func (messageService *MessageService) CreateMessage(messageRequest schemas.Messa
 
 	message, err := messageService.messageRepository.CreateMessage(data)
 
-	return message, err
+	return &message, err
 }
 
 func (messageService *MessageService) UpdateMessage(messageRequest *schemas.MessageUpdate, messageId int) error {

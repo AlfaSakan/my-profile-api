@@ -9,7 +9,7 @@ import (
 type IParticipantRepository interface {
 	FindAllParticipant(int) ([]models.Participant, error)
 	FindAllChatRoom(int) ([]models.Participant, error)
-	CreateParticipant(models.Participant) (models.Participant, error)
+	CreateParticipant(*models.Participant) error
 }
 
 type ParticipantRepository struct {

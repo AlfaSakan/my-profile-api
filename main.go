@@ -12,6 +12,7 @@ func main() {
 	router := gin.Default()
 
 	v1 := router.Group("/v1")
+	v1.Use(handlers.CORSMiddleware())
 
 	userService, messageService, chatRoomService, participantService := database.DatabaseConnection()
 
