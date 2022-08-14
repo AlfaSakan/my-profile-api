@@ -68,7 +68,7 @@ func TestParticipantRepository_FindAllChatRoom(t *testing.T) {
 			WillReturnRows(rows)
 
 		repo := NewParticipantRepository(db)
-		participants, err := repo.FindAllChatRoom(userId)
+		participants, err := repo.FindAllChatRoom(uint(userId))
 
 		assert.Nil(t, err)
 		assert.Equal(t, participantData, participants[0])

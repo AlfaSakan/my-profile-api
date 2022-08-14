@@ -11,7 +11,7 @@ type IChatRoomService interface {
 	CreateChatRoom(schemas.ChatRoomRequest) (models.ChatRoom, error)
 	UpdateChatRoom(*schemas.ChatRoomRequest, int) error
 	RemoveChatRoom(int) error
-	FindAllChatRoomByUserId(int) ([]schemas.ChatRoomWithPartisipants, error)
+	FindAllChatRoomByUserId(uint) ([]schemas.ChatRoomWithPartisipants, error)
 	FindAllParticipantByChatRoomId(int) ([]uint, error)
 }
 
@@ -74,7 +74,7 @@ func (chatRoomService *ChatRoomService) FindAllParticipantByChatRoomId(chatRoomI
 	return data, err
 }
 
-func (chatRoomService *ChatRoomService) FindAllChatRoomByUserId(userId int) ([]schemas.ChatRoomWithPartisipants, error) {
+func (chatRoomService *ChatRoomService) FindAllChatRoomByUserId(userId uint) ([]schemas.ChatRoomWithPartisipants, error) {
 	participants, err := chatRoomService.participantRepository.FindAllChatRoom(userId)
 
 	var chatRooms []schemas.ChatRoomWithPartisipants

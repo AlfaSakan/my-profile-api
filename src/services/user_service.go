@@ -7,9 +7,9 @@ import (
 )
 
 type IUserService interface {
-	FindUserById(userId int) (models.User, error)
+	FindUserById(userId uint) (models.User, error)
 	CreateUser(schemas.UserRequest) (models.User, error)
-	UpdateUser(schemas.UpdateUserRequest, int) (models.User, error)
+	UpdateUser(schemas.UpdateUserRequest, uint) (models.User, error)
 }
 
 type UserService struct {
@@ -20,7 +20,7 @@ func NewUserService(userRepository repositories.IUserRepository) *UserService {
 	return &UserService{userRepository}
 }
 
-func (userService *UserService) FindUserById(userId int) (models.User, error) {
+func (userService *UserService) FindUserById(userId uint) (models.User, error) {
 	user, err := userService.userRepository.FindUserById(userId)
 	return user, err
 }
@@ -38,7 +38,7 @@ func (userService *UserService) CreateUser(userRequest schemas.UserRequest) (mod
 	return user, err
 }
 
-func (userService *UserService) UpdateUser(userRequest schemas.UpdateUserRequest, userId int) (models.User, error) {
+func (userService *UserService) UpdateUser(userRequest schemas.UpdateUserRequest, userId uint) (models.User, error) {
 	user := models.User{
 		Name:        userRequest.Name,
 		CountryCode: userRequest.CountryCode,

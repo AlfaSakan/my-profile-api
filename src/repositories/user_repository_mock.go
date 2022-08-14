@@ -10,7 +10,7 @@ type IUserRepositoryMock struct {
 	Mock mock.Mock
 }
 
-func (repository *IUserRepositoryMock) FindUserById(userId int) (models.User, error) {
+func (repository *IUserRepositoryMock) FindUserById(userId uint) (models.User, error) {
 	arguments := repository.Mock.Called(userId)
 
 	if arguments.Get(0) == nil {
@@ -32,7 +32,7 @@ func (repository *IUserRepositoryMock) CreateUser(user models.User) (models.User
 	return user, nil
 }
 
-func (repository *IUserRepositoryMock) UpdateUser(user models.User, userId int) (models.User, error) {
+func (repository *IUserRepositoryMock) UpdateUser(user models.User, userId uint) (models.User, error) {
 	arguments := repository.Mock.Called(user, userId)
 
 	if arguments.Get(0) == nil {

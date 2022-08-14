@@ -8,7 +8,7 @@ import (
 
 type IParticipantRepository interface {
 	FindAllParticipant(int) ([]models.Participant, error)
-	FindAllChatRoom(int) ([]models.Participant, error)
+	FindAllChatRoom(uint) ([]models.Participant, error)
 	CreateParticipant(*models.Participant) error
 }
 
@@ -28,10 +28,10 @@ func (participantRepository *ParticipantRepository) FindAllParticipant(chatRoomI
 	return participants, err
 }
 
-func (participantRepository *ParticipantRepository) FindAllChatRoom(userId int) ([]models.Participant, error) {
+func (participantRepository *ParticipantRepository) FindAllChatRoom(userId uint) ([]models.Participant, error) {
 	var participants []models.Participant
 
-	err := participantRepository.db.Where(&models.Participant{UserId: uint(userId)}).Find(&participants).Error
+	err := participantRepository.db.Where(&models.Participant{UserId: userId}).Find(&participants).Error
 
 	return participants, err
 }

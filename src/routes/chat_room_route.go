@@ -2,6 +2,7 @@ package routes
 
 import (
 	"myProfileApi/src/handlers"
+	"myProfileApi/src/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,7 +10,7 @@ import (
 const CHAT_ROOM_ROUTE = "/chat-room"
 
 func ChatRoomRoute(router *gin.RouterGroup, chatRoomHandler *handlers.ChatRoomHandler) {
-	router.GET(CHAT_ROOM_ROUTE+"/:userId", chatRoomHandler.GetAllChatRoom)
+	router.GET(CHAT_ROOM_ROUTE+"/:userId", middlewares.RequireUser(), chatRoomHandler.GetAllChatRoom)
 
 	router.POST(CHAT_ROOM_ROUTE, chatRoomHandler.PostChatRoom)
 

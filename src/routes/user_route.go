@@ -2,6 +2,7 @@ package routes
 
 import (
 	"myProfileApi/src/handlers"
+	"myProfileApi/src/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,7 +10,7 @@ import (
 const USER_ROUTE = "/user"
 
 func RouteUser(router *gin.RouterGroup, handler *handlers.UserHandler) {
-	router.GET(USER_ROUTE+"/:userId", handler.GetUserHandler)
+	router.GET(USER_ROUTE+"/:userId", middlewares.RequireUser(), handler.GetUserHandler)
 
 	router.POST(USER_ROUTE, handler.PostUserHandler)
 

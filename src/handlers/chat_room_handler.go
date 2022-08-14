@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"myProfileApi/src/models"
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
 	"myProfileApi/src/utils"
@@ -21,7 +22,9 @@ func NewChatRoomHandler(chatRoomService services.IChatRoomService, participantSe
 
 func (chatRoomHandler *ChatRoomHandler) GetAllChatRoom(ctx *gin.Context) {
 	response := new(schemas.Response)
-	userId := utils.ConvertParamToInt(ctx, "userId")
+
+	user, _ := ctx.Get("User")
+	userId := user.(models.User).UserId
 
 	if userId == 0 {
 		return

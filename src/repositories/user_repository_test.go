@@ -35,7 +35,7 @@ func TestUserRepository__FindUserById(t *testing.T) {
 			WillReturnRows(rows)
 
 		userRepo := NewUserRepository(db)
-		user, errRepo := userRepo.FindUserById(userId)
+		user, errRepo := userRepo.FindUserById(uint(userId))
 		assert.Nil(t, errRepo)
 		assert.Equal(t, newUser, user)
 	})

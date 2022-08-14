@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"myProfileApi/src/models"
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
 	"myProfileApi/src/utils"
@@ -49,6 +50,11 @@ func (messageHandler *MessageHandler) GetMessageHandler(ctx *gin.Context) {
 func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 	var request schemas.MessageRequest
 	response := new(schemas.Response)
+
+	user, _ := ctx.Get("User")
+	userId := user.(models.User).UserId
+
+	request.UserId = userId
 
 	errRequest := ctx.ShouldBindJSON(&request)
 	if errRequest != nil {

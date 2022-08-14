@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"myProfileApi/src/models"
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
-	"myProfileApi/src/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +19,8 @@ func NewUserHandler(userService services.IUserService) *UserHandler {
 }
 
 func (userHandler *UserHandler) GetUserHandler(ctx *gin.Context) {
-	userId := utils.ConvertParamToInt(ctx, "userId")
+	user, _ := ctx.Get("User")
+	userId := user.(models.User).UserId
 
 	response := new(schemas.Response)
 
@@ -69,7 +70,8 @@ func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 	var request schemas.UpdateUserRequest
 	response := new(schemas.Response)
 
-	userId := utils.ConvertParamToInt(ctx, "userId")
+	user, _ := ctx.Get("User")
+	userId := user.(models.User).UserId
 
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
