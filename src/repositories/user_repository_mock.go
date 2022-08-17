@@ -42,3 +42,9 @@ func (repository *IUserRepositoryMock) UpdateUser(user models.User, userId uint)
 	user = arguments.Get(0).(models.User)
 	return user, nil
 }
+
+func (repository *IUserRepositoryMock) FindUser(user *models.User) (*models.User, error) {
+	foundUser := &models.User{}
+
+	return foundUser, nil
+}

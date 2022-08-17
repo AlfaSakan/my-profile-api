@@ -1,6 +1,7 @@
 package schemas
 
 type SessionRequest struct {
-	UserId    int    `json:"user_id" binding:"required"`
-	UserAgent string `json:"user_agent"`
+	UserAgent   string `json:"user_agent"`
+	Name        string `json:"name" binding:"required"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
 }

@@ -3,7 +3,6 @@ package middlewares
 import (
 	"myProfileApi/src/models"
 	"myProfileApi/src/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -11,14 +10,14 @@ import (
 
 func DeserializeUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		accessToken, err := strconv.Unquote(c.Request.Header.Get("Authorization"))
-		if err != nil {
+		accessToken := c.Request.Header.Get("Authorization")
+		if len(accessToken) == 0 {
 			c.Next()
 			return
 		}
 
-		refreshToken, err := strconv.Unquote(c.Request.Header.Get("x-refresh"))
-		if err != nil {
+		refreshToken := c.Request.Header.Get("X-Refresh")
+		if len(refreshToken) == 0 {
 			c.Next()
 			return
 		}
@@ -29,7 +28,7 @@ func DeserializeUser(db *gorm.DB) gin.HandlerFunc {
 			newAccessToken, user := utils.ReIssueAccessToken(db, refreshToken)
 
 			if user != nil {
-				c.Header("x-access", newAccessToken)
+				c.Header("X-Access", newAccessToken)
 				c.Set("User", user)
 			}
 

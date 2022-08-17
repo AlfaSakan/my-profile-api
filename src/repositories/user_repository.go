@@ -10,6 +10,7 @@ type IUserRepository interface {
 	FindUserById(uint) (models.User, error)
 	CreateUser(models.User) (models.User, error)
 	UpdateUser(models.User, uint) (models.User, error)
+	FindUser(*models.User) (*models.User, error)
 }
 
 type UserRepository struct {
@@ -38,4 +39,12 @@ func (repository *UserRepository) UpdateUser(user models.User, userId uint) (mod
 	err := repository.db.Where(&models.User{UserId: uint(userId)}).Updates(&user).Error
 
 	return user, err
+}
+
+func (repository *UserRepository) FindUser(user *models.User) (*models.User, error) {
+	foundUser := &models.User{}
+
+	err := repository.db.Find(foundUser, user).Error
+
+	return foundUser, err
 }

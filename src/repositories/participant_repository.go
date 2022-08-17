@@ -7,9 +7,11 @@ import (
 )
 
 type IParticipantRepository interface {
-	FindAllParticipant(int) ([]models.Participant, error)
+	FindAllParticipant(chatRoomId int) ([]models.Participant, error)
 	FindAllChatRoom(uint) ([]models.Participant, error)
 	CreateParticipant(*models.Participant) error
+	RemoveParticipant(userId uint, chatRoomId uint) error
+	FindOne(userId uint, chatRoomId uint) (*models.Participant, error)
 }
 
 type ParticipantRepository struct {
@@ -40,4 +42,16 @@ func (participantRepository *ParticipantRepository) CreateParticipant(participan
 	err := participantRepository.db.Create(participant).Error
 
 	return err
+}
+
+func (participantRepository *ParticipantRepository) RemoveParticipant(userId uint, chatRoomId uint) error {
+	return participantRepository.db.Where(&models.Participant{UserId: userId, ChatRoomId: chatRoomId}).Delete(&models.Participant{}).Error
+}
+
+func (participantRepository *ParticipantRepository) FindOne(userId uint, chatRoomId uint) (*models.Participant, error) {
+	participant := &models.Participant{}
+
+	err := participantRepository.db.Where(&models.Participant{UserId: userId, ChatRoomId: chatRoomId}).Find(participant).Error
+
+	return participant, err
 }

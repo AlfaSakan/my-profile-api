@@ -10,9 +10,9 @@ import (
 const USER_ROUTE = "/user"
 
 func RouteUser(router *gin.RouterGroup, handler *handlers.UserHandler) {
-	router.GET(USER_ROUTE+"/:userId", middlewares.RequireUser(), handler.GetUserHandler)
+	router.GET(USER_ROUTE, middlewares.RequireUser(), handler.GetUserHandler)
 
 	router.POST(USER_ROUTE, handler.PostUserHandler)
 
-	router.PATCH(USER_ROUTE+"/:userId", handler.PatchUserHandler)
+	router.PATCH(USER_ROUTE, handler.PatchUserHandler)
 }

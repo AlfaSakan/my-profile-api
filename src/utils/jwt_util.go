@@ -13,8 +13,7 @@ type CustomClaim struct {
 	SessionId uint `json:"session_id"`
 }
 
-func GenerateToken(data *CustomClaim) (string, error) {
-	expireTime := time.Now().Add(time.Hour * 12).UnixMilli()
+func GenerateToken(data *CustomClaim, expireTime int64) (string, error) {
 	privateKey := ViperEnvVariable("PRIVATEKEY")
 
 	claims := jwt.MapClaims{

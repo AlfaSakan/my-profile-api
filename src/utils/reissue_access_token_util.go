@@ -3,6 +3,7 @@ package utils
 import (
 	"myProfileApi/src/models"
 	"myProfileApi/src/repositories"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -34,7 +35,8 @@ func ReIssueAccessToken(db *gorm.DB, refreshToken string) (string, *models.User)
 		User: &user,
 	}
 
-	accessToken, err := GenerateToken(newClaims)
+	expireAccessToken := time.Now().Add(time.Hour * 12).UnixMilli()
+	accessToken, err := GenerateToken(newClaims, expireAccessToken)
 	if err != nil {
 		return "", nil
 	}

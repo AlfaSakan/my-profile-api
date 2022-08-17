@@ -1,23 +1,26 @@
 package handlers
 
 import (
+	"fmt"
 	"myProfileApi/src/models"
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
 	"myProfileApi/src/utils"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
 type MessageHandler struct {
-	messageService services.IMessageService
+	messageService  services.IMessageService
+	chatRoomService services.IChatRoomService
 }
 
-func NewMessageHandler(messageService services.IMessageService) *MessageHandler {
-	return &MessageHandler{messageService}
+func NewMessageHandler(messageService services.IMessageService, chatRoomService services.IChatRoomService) *MessageHandler {
+	return &MessageHandler{messageService, chatRoomService}
 }
 
 func (messageHandler *MessageHandler) GetMessageHandler(ctx *gin.Context) {
@@ -52,9 +55,9 @@ func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 	response := new(schemas.Response)
 
 	user, _ := ctx.Get("User")
-	userId := user.(models.User).UserId
+	userId := user.(*models.User).UserId
 
-	request.UserId = userId
+	request.SenderId = userId
 
 	errRequest := ctx.ShouldBindJSON(&request)
 	if errRequest != nil {
@@ -66,6 +69,14 @@ func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 		}
 	}
 
+	participantsId, _ := messageHandler.chatRoomService.FindAllParticipantByChatRoomId(int(request.ChatRoomId))
+	isExist := utils.ArrayContainsUint(participantsId, userId)
+
+	if !isExist {
+		utils.ResponseBadRequest(ctx, response, fmt.Errorf("user not in the chat room"))
+		return
+	}
+
 	responseService, err := messageHandler.messageService.CreateMessage(request)
 	if err != nil {
 		response.Message = err.Error()
@@ -73,6 +84,10 @@ func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
+
+	chatRoom := &schemas.ChatRoomRequest{UpdatedAt: time.Now().UnixMilli()}
+
+	messageHandler.chatRoomService.UpdateChatRoom(chatRoom, int(request.ChatRoomId))
 
 	response.Status = http.StatusCreated
 	response.Data = responseService

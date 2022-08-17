@@ -3,11 +3,10 @@ package services
 import (
 	"myProfileApi/src/models"
 	"myProfileApi/src/repositories"
-	"myProfileApi/src/schemas"
 )
 
 type ISessionService interface {
-	Login(*schemas.SessionRequest) (*models.Session, error)
+	Login(uint, string) (*models.Session, error)
 	Logout(int) error
 }
 
@@ -20,9 +19,10 @@ func NewSessionService(sessionRepository repositories.ISessionRepository, userRe
 	return &SessionService{sessionRepository, userRepository}
 }
 
-func (s *SessionService) Login(sessionRequest *schemas.SessionRequest) (*models.Session, error) {
+func (s *SessionService) Login(userId uint, userAgent string) (*models.Session, error) {
 	session := &models.Session{
-		UserId: uint(sessionRequest.UserId),
+		UserId:    uint(userId),
+		UserAgent: userAgent,
 	}
 
 	err := s.sessionRepository.CreateSession(session)

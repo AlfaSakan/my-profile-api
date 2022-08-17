@@ -20,7 +20,7 @@ func NewUserHandler(userService services.IUserService) *UserHandler {
 
 func (userHandler *UserHandler) GetUserHandler(ctx *gin.Context) {
 	user, _ := ctx.Get("User")
-	userId := user.(models.User).UserId
+	userId := user.(*models.User).UserId
 
 	response := new(schemas.Response)
 
@@ -32,7 +32,7 @@ func (userHandler *UserHandler) GetUserHandler(ctx *gin.Context) {
 		return
 	}
 
-	response.Message = ""
+	response.Message = "OK"
 	response.Status = http.StatusOK
 	response.Data = user
 	ctx.JSON(http.StatusOK, response)
@@ -61,7 +61,7 @@ func (userHandler *UserHandler) PostUserHandler(ctx *gin.Context) {
 	}
 
 	response.Status = http.StatusCreated
-	response.Message = ""
+	response.Message = "OK"
 	response.Data = responseService
 	ctx.JSON(http.StatusCreated, response)
 }
@@ -71,7 +71,7 @@ func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 	response := new(schemas.Response)
 
 	user, _ := ctx.Get("User")
-	userId := user.(models.User).UserId
+	userId := user.(*models.User).UserId
 
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {

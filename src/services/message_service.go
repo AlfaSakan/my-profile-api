@@ -29,7 +29,7 @@ func (messageService *MessageService) FindMessageByChatRoomId(chatRoomId int) (*
 func (messageService *MessageService) CreateMessage(messageRequest schemas.MessageRequest) (*models.Message, error) {
 	data := models.Message{
 		Message:    messageRequest.Message,
-		UserId:     messageRequest.UserId,
+		SenderId:   messageRequest.SenderId,
 		ChatRoomId: messageRequest.ChatRoomId,
 		Type:       messageRequest.Type,
 	}

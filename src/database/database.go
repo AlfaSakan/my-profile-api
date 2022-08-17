@@ -19,7 +19,6 @@ func DatabaseConnection() (*gorm.DB, *services.UserService, *services.MessageSer
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.ChatRoom{})
 	db.AutoMigrate(&models.Message{})
-	db.AutoMigrate(&models.MessageRead{})
 	db.AutoMigrate(&models.Participant{})
 	db.AutoMigrate(&models.Session{})
 
@@ -33,7 +32,7 @@ func DatabaseConnection() (*gorm.DB, *services.UserService, *services.MessageSer
 	participantService := services.NewParticipantService(participantRepository)
 
 	chatRoomRepository := repositories.NewChatRoomRepository(db)
-	chatRoomService := services.NewChatRoomService(chatRoomRepository, participantRepository)
+	chatRoomService := services.NewChatRoomService(chatRoomRepository, participantRepository, messageRepository)
 
 	sessionRepository := repositories.NewSessionRepository(db)
 	sessionService := services.NewSessionService(sessionRepository, userRepository)

@@ -10,6 +10,7 @@ type IUserService interface {
 	FindUserById(userId uint) (models.User, error)
 	CreateUser(schemas.UserRequest) (models.User, error)
 	UpdateUser(schemas.UpdateUserRequest, uint) (models.User, error)
+	FindUser(*schemas.UserRequest) (*models.User, error)
 }
 
 type UserService struct {
@@ -49,4 +50,16 @@ func (userService *UserService) UpdateUser(userRequest schemas.UpdateUserRequest
 
 	user, err := userService.userRepository.UpdateUser(user, userId)
 	return user, err
+}
+
+func (userService *UserService) FindUser(userRequest *schemas.UserRequest) (*models.User, error) {
+	user := &models.User{
+		Name:        userRequest.Name,
+		CountryCode: userRequest.CountryCode,
+		PhoneNumber: userRequest.PhoneNumber,
+	}
+
+	foundUser, err := userService.userRepository.FindUser(user)
+
+	return foundUser, err
 }

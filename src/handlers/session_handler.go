@@ -7,6 +7,7 @@ import (
 	"myProfileApi/src/services"
 	"myProfileApi/src/utils"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,25 +32,26 @@ func (s *SessionHandler) PostSessionHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := s.userService.FindUserById(uint(request.UserId))
-	if err != nil {
-		utils.ResponseBadRequest(ctx, response, err)
+	user, _ := s.userService.FindUser(&schemas.UserRequest{Name: request.Name, PhoneNumber: request.PhoneNumber})
+	if len(user.Name) == 0 {
+		utils.ResponseBadRequest(ctx, response, fmt.Errorf("user not found"))
 		return
 	}
 
-	request.UserAgent = ctx.Request.UserAgent()
+	userAgent := ctx.Request.UserAgent()
 
-	session, err := s.sessionService.Login(request)
+	session, err := s.sessionService.Login(user.UserId, userAgent)
 	if err != nil {
 		utils.ResponseBadRequest(ctx, response, err)
 		return
 	}
 
 	accessClaims := &utils.CustomClaim{
-		User: &user,
+		User: user,
 	}
 
-	accessToken, err := utils.GenerateToken(accessClaims)
+	expireAccessToken := time.Now().Add(time.Hour * 12).UnixMilli()
+	accessToken, err := utils.GenerateToken(accessClaims, expireAccessToken)
 	if err != nil {
 		utils.ResponseBadRequest(ctx, response, err)
 		return
@@ -60,7 +62,8 @@ func (s *SessionHandler) PostSessionHandler(ctx *gin.Context) {
 		SessionId: session.SessionId,
 	}
 
-	refreshToken, err := utils.GenerateToken(refreshClaim)
+	expireRefreshToken := time.Now().Add(time.Hour * 24 * 30 * 12).UnixMilli()
+	refreshToken, err := utils.GenerateToken(refreshClaim, expireRefreshToken)
 	if err != nil {
 		utils.ResponseBadRequest(ctx, response, err)
 		return

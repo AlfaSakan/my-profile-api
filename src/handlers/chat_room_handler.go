@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"myProfileApi/src/models"
 	"myProfileApi/src/schemas"
 	"myProfileApi/src/services"
@@ -24,8 +25,7 @@ func (chatRoomHandler *ChatRoomHandler) GetAllChatRoom(ctx *gin.Context) {
 	response := new(schemas.Response)
 
 	user, _ := ctx.Get("User")
-	userId := user.(models.User).UserId
-
+	userId := user.(*models.User).UserId
 	if userId == 0 {
 		return
 	}
@@ -50,6 +50,11 @@ func (chatRoomHandler *ChatRoomHandler) PostChatRoom(ctx *gin.Context) {
 	var request schemas.ChatRoomRequest
 	response := new(schemas.Response)
 
+	user, _ := ctx.Get("User")
+	userId := user.(*models.User).UserId
+
+	request.UserId = int(userId)
+
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
@@ -60,18 +65,10 @@ func (chatRoomHandler *ChatRoomHandler) PostChatRoom(ctx *gin.Context) {
 			return
 		}
 	}
+
 	chatRoom, errChatRoom := chatRoomHandler.chatRoomService.CreateChatRoom(request)
 	if errChatRoom != nil {
 		response.Message = errChatRoom.Error()
-		response.Status = http.StatusBadRequest
-
-		ctx.JSON(response.Status, response)
-		return
-	}
-
-	errParticipant := chatRoomHandler.participantService.CreateParticipant(request.UserId, chatRoom.ChatRoomId)
-	if errParticipant != nil {
-		response.Message = errParticipant.Error()
 		response.Status = http.StatusBadRequest
 
 		ctx.JSON(response.Status, response)
@@ -87,6 +84,11 @@ func (chatRoomHandler *ChatRoomHandler) PostChatRoom(ctx *gin.Context) {
 func (chatRoomHandler *ChatRoomHandler) PatchChatRoom(ctx *gin.Context) {
 	var request schemas.ChatRoomRequest
 	response := new(schemas.Response)
+
+	user, _ := ctx.Get("User")
+	userId := user.(*models.User).UserId
+
+	request.UserId = int(userId)
 
 	chatRoomId := utils.ConvertParamToInt(ctx, "chatRoomId")
 
@@ -123,19 +125,19 @@ func (chatRoomHandler *ChatRoomHandler) PatchChatRoom(ctx *gin.Context) {
 
 func (chatRoomHandler *ChatRoomHandler) DeleteChatRoom(ctx *gin.Context) {
 	response := new(schemas.Response)
+	user, _ := ctx.Get("User")
+	userId := user.(*models.User).UserId
 
 	chatRoomId := utils.ConvertParamToInt(ctx, "chatRoomId")
 
 	if chatRoomId == 0 {
+		utils.ResponseBadRequest(ctx, response, fmt.Errorf("chat room id error"))
 		return
 	}
 
-	err := chatRoomHandler.chatRoomService.RemoveChatRoom(chatRoomId)
+	err := chatRoomHandler.chatRoomService.RemoveChatRoom(userId, chatRoomId)
 	if err != nil {
-		response.Message = err.Error()
-		response.Status = http.StatusBadRequest
-
-		ctx.JSON(response.Status, response)
+		utils.ResponseBadRequest(ctx, response, err)
 		return
 	}
 
@@ -143,5 +145,57 @@ func (chatRoomHandler *ChatRoomHandler) DeleteChatRoom(ctx *gin.Context) {
 	response.Data = ""
 	response.Message = "Success deleted"
 
+	ctx.JSON(response.Status, response)
+}
+
+func (ChatRoomHandler *ChatRoomHandler) PostAddParticipant(ctx *gin.Context) {
+	request := &schemas.AddParticipantRequest{}
+	response := &schemas.Response{}
+
+	err := ctx.ShouldBindJSON(request)
+	if err != nil {
+		utils.ResponseBadRequest(ctx, response, err)
+		return
+	}
+
+	user, _ := ctx.Get("User")
+	userId := user.(*models.User).UserId
+
+	participant, err := ChatRoomHandler.participantService.FindUserAdmin(userId, request.ChatRoomId)
+
+	if participant == nil {
+		utils.ResponseBadRequest(ctx, response, err)
+		return
+	}
+
+	for _, userId := range request.UserIds {
+		ChatRoomHandler.participantService.CreateParticipant(userId, uint(request.ChatRoomId))
+	}
+
+	response.Message = "OK"
+	response.Status = http.StatusOK
+	response.Data = ""
+	ctx.JSON(response.Status, response)
+}
+
+func (ChatRoomHandler *ChatRoomHandler) GetChatRoomById(ctx *gin.Context) {
+	response := &schemas.Response{}
+	chatRoomId := utils.ConvertParamToInt(ctx, "chatRoomId")
+
+	if chatRoomId == 0 {
+		utils.ResponseBadRequest(ctx, response, fmt.Errorf("error chat room id"))
+		return
+	}
+
+	chatRoom, err := ChatRoomHandler.chatRoomService.FindChatRoomById(chatRoomId)
+
+	if err != nil {
+		utils.ResponseBadRequest(ctx, response, err)
+		return
+	}
+
+	response.Message = "OK"
+	response.Status = http.StatusOK
+	response.Data = chatRoom
 	ctx.JSON(response.Status, response)
 }
