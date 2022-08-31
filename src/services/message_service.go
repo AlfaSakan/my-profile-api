@@ -1,15 +1,16 @@
 package services
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/repositories"
-	"myProfileApi/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/repositories"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 )
 
 type IMessageService interface {
 	CreateMessage(schemas.MessageRequest) (*models.Message, error)
-	FindMessageByChatRoomId(int) (*[]models.Message, error)
-	UpdateMessage(*schemas.MessageUpdate, int) error
+	FindMessageByChatRoomId(chatRoomId string) (*[]models.Message, error)
+	UpdateMessage(messageRequest *schemas.MessageUpdate, messageId string) error
 }
 
 type MessageService struct {
@@ -20,7 +21,7 @@ func NewMessageService(messageRepository repositories.IMessageRepository) *Messa
 	return &MessageService{messageRepository}
 }
 
-func (messageService *MessageService) FindMessageByChatRoomId(chatRoomId int) (*[]models.Message, error) {
+func (messageService *MessageService) FindMessageByChatRoomId(chatRoomId string) (*[]models.Message, error) {
 	messages, err := messageService.messageRepository.FindMessagesByChatRoomId(chatRoomId)
 
 	return messages, err
@@ -32,6 +33,7 @@ func (messageService *MessageService) CreateMessage(messageRequest schemas.Messa
 		SenderId:   messageRequest.SenderId,
 		ChatRoomId: messageRequest.ChatRoomId,
 		Type:       messageRequest.Type,
+		MessageId:  utils.GenerateId(),
 	}
 
 	message, err := messageService.messageRepository.CreateMessage(data)
@@ -39,7 +41,7 @@ func (messageService *MessageService) CreateMessage(messageRequest schemas.Messa
 	return &message, err
 }
 
-func (messageService *MessageService) UpdateMessage(messageRequest *schemas.MessageUpdate, messageId int) error {
+func (messageService *MessageService) UpdateMessage(messageRequest *schemas.MessageUpdate, messageId string) error {
 	message := &models.Message{
 		StatusMessage: messageRequest.StatusMessage,
 	}

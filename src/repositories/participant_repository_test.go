@@ -1,10 +1,11 @@
 package repositories
 
 import (
-	mockModule "myProfileApi/src/mock_module"
-	"myProfileApi/src/models"
 	"regexp"
 	"testing"
+
+	mockModule "github.com/AlfaSakan/my-profile-api.git/src/mock_module"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -14,16 +15,16 @@ func TestParticipantRepository_FindAllParticipant(t *testing.T) {
 	db, mock := mockModule.Database()
 
 	t.Run("success find list participant", func(t *testing.T) {
-		chatRoomId := 1
+		chatRoomId := "1"
 
 		participantData := models.Participant{
-			UserId:     1,
-			ChatRoomId: 1,
+			UserId:     "1",
+			ChatRoomId: "1",
 		}
 
 		participantData2 := models.Participant{
-			UserId:     2,
-			ChatRoomId: 1,
+			UserId:     "2",
+			ChatRoomId: "1",
 		}
 
 		rows := sqlmock.NewRows([]string{"chat_room_id", "user_id"}).
@@ -47,16 +48,16 @@ func TestParticipantRepository_FindAllChatRoom(t *testing.T) {
 	db, mock := mockModule.Database()
 
 	t.Run("success find list chat room", func(t *testing.T) {
-		userId := 1
+		userId := "1"
 
 		participantData := models.Participant{
-			UserId:     1,
-			ChatRoomId: 1,
+			UserId:     "1",
+			ChatRoomId: "1",
 		}
 
 		participantData2 := models.Participant{
-			UserId:     1,
-			ChatRoomId: 2,
+			UserId:     "1",
+			ChatRoomId: "2",
 		}
 
 		rows := sqlmock.NewRows([]string{"chat_room_id", "user_id"}).
@@ -68,7 +69,7 @@ func TestParticipantRepository_FindAllChatRoom(t *testing.T) {
 			WillReturnRows(rows)
 
 		repo := NewParticipantRepository(db)
-		participants, err := repo.FindAllChatRoom(uint(userId))
+		participants, err := repo.FindAllChatRoom(userId)
 
 		assert.Nil(t, err)
 		assert.Equal(t, participantData, participants[0])
@@ -81,8 +82,8 @@ func TestParticipantRepository_CreateParticipant(t *testing.T) {
 
 	t.Run("success create new participant", func(t *testing.T) {
 		participant := &models.Participant{
-			UserId:     1,
-			ChatRoomId: 1,
+			UserId:     "1",
+			ChatRoomId: "1",
 		}
 
 		mock.ExpectBegin()

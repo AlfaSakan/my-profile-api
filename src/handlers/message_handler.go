@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"myProfileApi/src/models"
-	"myProfileApi/src/schemas"
-	"myProfileApi/src/services"
-	"myProfileApi/src/utils"
 	"net/http"
-	"strconv"
 	"time"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/services"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -27,15 +27,7 @@ func (messageHandler *MessageHandler) GetMessageHandler(ctx *gin.Context) {
 	chatRoomId := ctx.Param("chatRoomId")
 	response := new(schemas.Response)
 
-	chatRoomIdInt, errConvert := strconv.Atoi(chatRoomId)
-	if errConvert != nil {
-		response.Message = errConvert.Error()
-		response.Status = http.StatusBadRequest
-		ctx.JSON(http.StatusBadRequest, response)
-		return
-	}
-
-	messages, err := messageHandler.messageService.FindMessageByChatRoomId(chatRoomIdInt)
+	messages, err := messageHandler.messageService.FindMessageByChatRoomId(chatRoomId)
 	if err != nil {
 		response.Message = err.Error()
 		response.Status = http.StatusBadRequest
@@ -69,7 +61,7 @@ func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 		}
 	}
 
-	participantsId, _ := messageHandler.chatRoomService.FindAllParticipantByChatRoomId(int(request.ChatRoomId))
+	participantsId, _ := messageHandler.chatRoomService.FindAllParticipantByChatRoomId(request.ChatRoomId)
 	isExist := utils.ArrayContainsUint(participantsId, userId)
 
 	if !isExist {
@@ -87,7 +79,7 @@ func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 
 	chatRoom := &schemas.ChatRoomRequest{UpdatedAt: time.Now().UnixMilli()}
 
-	messageHandler.chatRoomService.UpdateChatRoom(chatRoom, int(request.ChatRoomId))
+	messageHandler.chatRoomService.UpdateChatRoom(chatRoom, request.ChatRoomId)
 
 	response.Status = http.StatusCreated
 	response.Data = responseService
@@ -96,7 +88,7 @@ func (messageHandler *MessageHandler) PostMessageHandler(ctx *gin.Context) {
 }
 
 func (messageHandler *MessageHandler) PatchMessageHandler(ctx *gin.Context) {
-	messageId := utils.ConvertParamToInt(ctx, "messageId")
+	messageId := ctx.Param("messageId")
 	response := &schemas.Response{}
 
 	message := &schemas.MessageUpdate{}

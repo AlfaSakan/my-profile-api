@@ -2,27 +2,30 @@ package services
 
 import (
 	"fmt"
-	"myProfileApi/src/models"
-	"myProfileApi/src/repositories"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/repositories"
 )
 
 type IParticipantService interface {
-	CreateParticipant(userId int, chatRoomId uint) error
-	RemoveParticipant(userId int, chatRoomId int) error
-	FindUserAdmin(userId uint, chatRoomId int) (*models.Participant, error)
+	CreateParticipant(userId string, chatRoomId string) error
+	RemoveParticipant(userId string, chatRoomId string) error
+	FindUserAdmin(userId string, chatRoomId string) (*models.Participant, error)
+	FindParticipantsList(chatRoomId string) (*[]models.User, error)
 }
 
 type ParticipantService struct {
 	participantRepository repositories.IParticipantRepository
+	userRepository        repositories.IUserRepository
 }
 
-func NewParticipantService(participantRepository repositories.IParticipantRepository) *ParticipantService {
-	return &ParticipantService{participantRepository}
+func NewParticipantService(participantRepository repositories.IParticipantRepository, userRepository repositories.IUserRepository) *ParticipantService {
+	return &ParticipantService{participantRepository, userRepository}
 }
 
-func (participantService *ParticipantService) CreateParticipant(userId int, chatRoomId uint) error {
+func (participantService *ParticipantService) CreateParticipant(userId string, chatRoomId string) error {
 	participant := &models.Participant{
-		UserId:     uint(userId),
+		UserId:     userId,
 		ChatRoomId: chatRoomId,
 	}
 
@@ -31,16 +34,30 @@ func (participantService *ParticipantService) CreateParticipant(userId int, chat
 	return err
 }
 
-func (participantService *ParticipantService) RemoveParticipant(userId int, chatRoomId int) error {
-	return participantService.participantRepository.RemoveParticipant(uint(userId), uint(chatRoomId))
+func (participantService *ParticipantService) RemoveParticipant(userId string, chatRoomId string) error {
+	return participantService.participantRepository.RemoveParticipant(userId, chatRoomId)
 }
 
-func (participantService *ParticipantService) FindUserAdmin(userId uint, chatRoomId int) (*models.Participant, error) {
-	participant, err := participantService.participantRepository.FindOne(uint(userId), uint(chatRoomId))
+func (participantService *ParticipantService) FindUserAdmin(userId string, chatRoomId string) (*models.Participant, error) {
+	participant, err := participantService.participantRepository.FindOne(userId, chatRoomId)
 
 	if participant.UserStatus != "admin" {
 		return nil, fmt.Errorf("not admin")
 	}
 
 	return participant, err
+}
+
+func (participantService *ParticipantService) FindParticipantsList(chatRoomId string) (*[]models.User, error) {
+	participants, err := participantService.participantRepository.FindAllParticipant(chatRoomId)
+
+	users := []models.User{}
+
+	for _, participant := range participants {
+		userFound, _ := participantService.userRepository.FindUserById(participant.UserId)
+
+		users = append(users, userFound)
+	}
+
+	return &users, err
 }

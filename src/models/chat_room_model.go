@@ -1,7 +1,7 @@
 package models
 
 type ChatRoom struct {
-	ChatRoomId  uint   `json:"chat_room_id" gorm:"primaryKey"`
+	ChatRoomId  string `json:"chat_room_id" gorm:"primaryKey"`
 	ImageUrl    string `json:"image_url" gorm:"size:200"`
 	Description string `json:"description" gorm:"size:200"`
 	Name        string `json:"name" gorm:"size:50"`

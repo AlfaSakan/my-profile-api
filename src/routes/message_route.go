@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"myProfileApi/src/handlers"
-	"myProfileApi/src/middlewares"
+	"github.com/AlfaSakan/my-profile-api.git/src/handlers"
+	"github.com/AlfaSakan/my-profile-api.git/src/middlewares"
 
 	"github.com/gin-gonic/gin"
 )

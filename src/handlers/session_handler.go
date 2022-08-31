@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	"myProfileApi/src/models"
-	"myProfileApi/src/schemas"
-	"myProfileApi/src/services"
-	"myProfileApi/src/utils"
 	"net/http"
 	"time"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/services"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -82,11 +83,8 @@ func (s *SessionHandler) PostSessionHandler(ctx *gin.Context) {
 
 func (s *SessionHandler) DeleteSessionHandler(ctx *gin.Context) {
 	response := &schemas.Response{}
-	sessionId := utils.ConvertParamToInt(ctx, "sessionId")
 
-	if sessionId == 0 {
-		return
-	}
+	sessionId := ctx.Param("sessionId")
 
 	err := s.sessionService.Logout(sessionId)
 	if err != nil {

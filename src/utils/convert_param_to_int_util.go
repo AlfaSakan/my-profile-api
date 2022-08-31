@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"myProfileApi/src/schemas"
 	"net/http"
 	"strconv"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
 
 	"github.com/gin-gonic/gin"
 )

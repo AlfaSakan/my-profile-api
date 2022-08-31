@@ -1,18 +1,19 @@
 package services
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/repositories"
-	"myProfileApi/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/repositories"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 )
 
 type IChatRoomService interface {
-	FindChatRoomById(int) (*schemas.ChatRoomWithPartisipants, error)
-	CreateChatRoom(schemas.ChatRoomRequest) (*schemas.ChatRoomWithPartisipants, error)
-	UpdateChatRoom(chatRoomRequest *schemas.ChatRoomRequest, chatRoomId int) error
-	RemoveChatRoom(userId uint, chatRoomId int) error
-	FindAllChatRoomByUserId(uint) ([]schemas.ChatRoomWithPartisipants, error)
-	FindAllParticipantByChatRoomId(int) ([]uint, error)
+	FindChatRoomById(chatRoomId string) (*schemas.ChatRoomWithPartisipants, error)
+	CreateChatRoom(chatRoomRequest schemas.ChatRoomRequest) (*schemas.ChatRoomWithPartisipants, error)
+	UpdateChatRoom(chatRoomRequest *schemas.ChatRoomRequest, chatRoomId string) error
+	RemoveChatRoom(userId string, chatRoomId string) error
+	FindAllChatRoomByUserId(userId string) ([]schemas.ChatRoomWithPartisipants, error)
+	FindAllParticipantByChatRoomId(chatRoomId string) ([]string, error)
 }
 
 type ChatRoomService struct {
@@ -25,7 +26,7 @@ func NewChatRoomService(cR repositories.IChatRoomRepository, pR repositories.IPa
 	return &ChatRoomService{chatRoomRepository: cR, participantRepository: pR, messageRepository: mR}
 }
 
-func (chatRoomService *ChatRoomService) FindChatRoomById(chatRoomId int) (*schemas.ChatRoomWithPartisipants, error) {
+func (chatRoomService *ChatRoomService) FindChatRoomById(chatRoomId string) (*schemas.ChatRoomWithPartisipants, error) {
 	chatRoom, err := chatRoomService.chatRoomRepository.FindChatRoomById(chatRoomId)
 	if err != nil {
 		return &schemas.ChatRoomWithPartisipants{}, err
@@ -41,7 +42,7 @@ func (chatRoomService *ChatRoomService) FindChatRoomById(chatRoomId int) (*schem
 		Name:        chatRoom.Name,
 	}
 
-	var participantsId = []uint{}
+	var participantsId = []string{}
 
 	participants, err := chatRoomService.participantRepository.FindAllParticipant(chatRoomId)
 	if err != nil {
@@ -68,8 +69,9 @@ func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.C
 		Description: chatRoomRequest.Description,
 		Name:        chatRoomRequest.Name,
 		Type:        chatRoomRequest.Type,
+		ChatRoomId:  utils.GenerateId(),
 	}
-	var memberId = []uint{}
+	var memberId = []string{}
 
 	chatRoom, err := chatRoomService.chatRoomRepository.CreateChatRoom(request)
 
@@ -88,7 +90,7 @@ func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.C
 	}
 
 	err = chatRoomService.participantRepository.CreateParticipant(&models.Participant{
-		UserId:     uint(chatRoomRequest.UserId),
+		UserId:     chatRoomRequest.UserId,
 		UserStatus: "admin",
 		ChatRoomId: chatRoom.ChatRoomId,
 	})
@@ -97,11 +99,11 @@ func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.C
 		return &schemas.ChatRoomWithPartisipants{}, err
 	}
 
-	memberId = append(memberId, uint(chatRoomRequest.UserId))
+	memberId = append(memberId, chatRoomRequest.UserId)
 
 	for _, part := range chatRoomRequest.ParticipantsId {
 		err = chatRoomService.participantRepository.CreateParticipant(&models.Participant{
-			UserId:     uint(part),
+			UserId:     part,
 			ChatRoomId: chatRoom.ChatRoomId,
 		})
 
@@ -109,7 +111,7 @@ func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.C
 			continue
 		}
 
-		memberId = append(memberId, uint(part))
+		memberId = append(memberId, part)
 	}
 
 	chatRoomCreated.ParticipantsId = &memberId
@@ -117,7 +119,7 @@ func (chatRoomService *ChatRoomService) CreateChatRoom(chatRoomRequest schemas.C
 	return chatRoomCreated, err
 }
 
-func (chatRoomService *ChatRoomService) UpdateChatRoom(chatRoomRequest *schemas.ChatRoomRequest, chatRoomId int) error {
+func (chatRoomService *ChatRoomService) UpdateChatRoom(chatRoomRequest *schemas.ChatRoomRequest, chatRoomId string) error {
 	chatRoom := &models.ChatRoom{
 		Description: chatRoomRequest.Description,
 		ImageUrl:    chatRoomRequest.ImageUrl,
@@ -130,16 +132,16 @@ func (chatRoomService *ChatRoomService) UpdateChatRoom(chatRoomRequest *schemas.
 	return err
 }
 
-func (chatRoomService *ChatRoomService) RemoveChatRoom(userId uint, chatRoomId int) error {
-	err := chatRoomService.participantRepository.RemoveParticipant(userId, uint(chatRoomId))
+func (chatRoomService *ChatRoomService) RemoveChatRoom(userId string, chatRoomId string) error {
+	err := chatRoomService.participantRepository.RemoveParticipant(userId, chatRoomId)
 
 	return err
 }
 
-func (chatRoomService *ChatRoomService) FindAllParticipantByChatRoomId(chatRoomId int) ([]uint, error) {
+func (chatRoomService *ChatRoomService) FindAllParticipantByChatRoomId(chatRoomId string) ([]string, error) {
 	participants, err := chatRoomService.participantRepository.FindAllParticipant(chatRoomId)
 
-	var data []uint
+	var data []string
 
 	for _, participant := range participants {
 		data = append(data, participant.UserId)
@@ -148,16 +150,16 @@ func (chatRoomService *ChatRoomService) FindAllParticipantByChatRoomId(chatRoomI
 	return data, err
 }
 
-func (cS *ChatRoomService) FindAllChatRoomByUserId(userId uint) ([]schemas.ChatRoomWithPartisipants, error) {
+func (cS *ChatRoomService) FindAllChatRoomByUserId(userId string) ([]schemas.ChatRoomWithPartisipants, error) {
 	participants, err := cS.participantRepository.FindAllChatRoom(userId)
 
 	var chatRooms []schemas.ChatRoomWithPartisipants
 
 	for _, participant := range participants {
-		chatRoom, _ := cS.chatRoomRepository.FindChatRoomById(int(participant.ChatRoomId))
-		chatRoomMembers, _ := cS.FindAllParticipantByChatRoomId(int(participant.ChatRoomId))
+		chatRoom, _ := cS.chatRoomRepository.FindChatRoomById(participant.ChatRoomId)
+		chatRoomMembers, _ := cS.FindAllParticipantByChatRoomId(participant.ChatRoomId)
 
-		messages, err := cS.messageRepository.FindMessagesByChatRoomId(int(chatRoom.ChatRoomId))
+		messages, err := cS.messageRepository.FindMessagesByChatRoomId(chatRoom.ChatRoomId)
 
 		if err != nil {
 			continue

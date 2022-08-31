@@ -1,17 +1,17 @@
 package repositories
 
 import (
-	"myProfileApi/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
 
 	"gorm.io/gorm"
 )
 
 type IParticipantRepository interface {
-	FindAllParticipant(chatRoomId int) ([]models.Participant, error)
-	FindAllChatRoom(uint) ([]models.Participant, error)
+	FindAllParticipant(chatRoomId string) ([]models.Participant, error)
+	FindAllChatRoom(userId string) ([]models.Participant, error)
 	CreateParticipant(*models.Participant) error
-	RemoveParticipant(userId uint, chatRoomId uint) error
-	FindOne(userId uint, chatRoomId uint) (*models.Participant, error)
+	RemoveParticipant(userId string, chatRoomId string) error
+	FindOne(userId string, chatRoomId string) (*models.Participant, error)
 }
 
 type ParticipantRepository struct {
@@ -22,15 +22,15 @@ func NewParticipantRepository(db *gorm.DB) *ParticipantRepository {
 	return &ParticipantRepository{db}
 }
 
-func (participantRepository *ParticipantRepository) FindAllParticipant(chatRoomId int) ([]models.Participant, error) {
+func (participantRepository *ParticipantRepository) FindAllParticipant(chatRoomId string) ([]models.Participant, error) {
 	var participants []models.Participant
 
-	err := participantRepository.db.Where(&models.Participant{ChatRoomId: uint(chatRoomId)}).Find(&participants).Error
+	err := participantRepository.db.Where(&models.Participant{ChatRoomId: chatRoomId}).Find(&participants).Error
 
 	return participants, err
 }
 
-func (participantRepository *ParticipantRepository) FindAllChatRoom(userId uint) ([]models.Participant, error) {
+func (participantRepository *ParticipantRepository) FindAllChatRoom(userId string) ([]models.Participant, error) {
 	var participants []models.Participant
 
 	err := participantRepository.db.Where(&models.Participant{UserId: userId}).Find(&participants).Error
@@ -44,11 +44,11 @@ func (participantRepository *ParticipantRepository) CreateParticipant(participan
 	return err
 }
 
-func (participantRepository *ParticipantRepository) RemoveParticipant(userId uint, chatRoomId uint) error {
+func (participantRepository *ParticipantRepository) RemoveParticipant(userId string, chatRoomId string) error {
 	return participantRepository.db.Where(&models.Participant{UserId: userId, ChatRoomId: chatRoomId}).Delete(&models.Participant{}).Error
 }
 
-func (participantRepository *ParticipantRepository) FindOne(userId uint, chatRoomId uint) (*models.Participant, error) {
+func (participantRepository *ParticipantRepository) FindOne(userId string, chatRoomId string) (*models.Participant, error) {
 	participant := &models.Participant{}
 
 	err := participantRepository.db.Where(&models.Participant{UserId: userId, ChatRoomId: chatRoomId}).Find(participant).Error

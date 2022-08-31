@@ -1,9 +1,9 @@
 package models
 
 type Message struct {
-	MessageId     uint   `json:"message_id" gorm:"primaryKey"`
-	ChatRoomId    uint   `json:"chat_room_id" gorm:"not null"`
-	SenderId      uint   `json:"sender_id" gorm:"not null"`
+	MessageId     string `json:"message_id" gorm:"primaryKey"`
+	ChatRoomId    string `json:"chat_room_id" gorm:"not null"`
+	SenderId      string `json:"sender_id" gorm:"not null"`
 	StatusMessage string `json:"status" gorm:"default:active;size:50"`
 	Type          string `json:"type" gorm:"size:50;default:chat"`
 	Message       string `json:"message"`

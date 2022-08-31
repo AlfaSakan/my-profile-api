@@ -2,15 +2,16 @@ package utils
 
 import (
 	"fmt"
-	"myProfileApi/src/models"
 	"time"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
 
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type CustomClaim struct {
 	*models.User
-	SessionId uint `json:"session_id"`
+	SessionId string `json:"session_id"`
 }
 
 func GenerateToken(data *CustomClaim, expireTime int64) (string, error) {

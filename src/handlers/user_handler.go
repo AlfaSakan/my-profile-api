@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/schemas"
-	"myProfileApi/src/services"
 	"net/http"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/services"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -95,4 +97,36 @@ func (userHandler *UserHandler) PatchUserHandler(ctx *gin.Context) {
 	response.Message = "OK"
 	response.Data = "Success Updated"
 	ctx.JSON(http.StatusOK, response)
+}
+
+func (uh *UserHandler) SearchUserHandler(c *gin.Context) {
+	name := c.Param("Name")
+	response := &schemas.Response{}
+
+	users, err := uh.userService.SearchUserByName(name)
+	if err != nil {
+		utils.ResponseBadRequest(c, response, err)
+		return
+	}
+
+	response.Data = users
+	response.Message = "OK"
+	response.Status = http.StatusOK
+	c.JSON(response.Status, response)
+}
+
+func (uh *UserHandler) GetOneUserHandler(c *gin.Context) {
+	userId := c.Param("UserId")
+	response := &schemas.Response{}
+
+	user, err := uh.userService.FindUserById(userId)
+	if err != nil {
+		utils.ResponseBadRequest(c, response, err)
+		return
+	}
+
+	response.Data = user
+	response.Message = "OK"
+	response.Status = http.StatusOK
+	c.JSON(response.Status, response)
 }

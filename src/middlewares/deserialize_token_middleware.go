@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/utils"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -39,7 +39,7 @@ func DeserializeUser(db *gorm.DB) gin.HandlerFunc {
 		data := accessClaim["data"].(map[string]interface{})
 
 		user := &models.User{
-			UserId:      uint(data["user_id"].(float64)),
+			UserId:      data["user_id"].(string),
 			CountryCode: data["country_code"].(string),
 			PhoneNumber: data["phone_number"].(string),
 			Name:        data["name"].(string),

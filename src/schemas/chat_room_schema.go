@@ -1,20 +1,20 @@
 package schemas
 
-import "myProfileApi/src/models"
+import "github.com/AlfaSakan/my-profile-api.git/src/models"
 
 type ChatRoomRequest struct {
-	ImageUrl       string `json:"image_url"`
-	Description    string `json:"description"`
-	Name           string `json:"name"`
-	Type           string `json:"type"`
-	UserId         int    `json:"user_id"`
-	ParticipantsId []int  `json:"participants_id" binding:"required"`
-	UpdatedAt      int64  `json:"updated_at"`
+	ImageUrl       string   `json:"image_url"`
+	Description    string   `json:"description"`
+	Name           string   `json:"name"`
+	Type           string   `json:"type"`
+	UserId         string   `json:"user_id"`
+	ParticipantsId []string `json:"participants_id" binding:"required"`
+	UpdatedAt      int64    `json:"updated_at"`
 }
 
 type ChatRoomWithPartisipants struct {
-	ChatRoomId     uint              `json:"chat_room_id"`
-	ParticipantsId *[]uint           `json:"participants_id"`
+	ChatRoomId     string            `json:"chat_room_id"`
+	ParticipantsId *[]string         `json:"participants_id"`
 	Messages       *[]models.Message `json:"messages"`
 	ImageUrl       string            `json:"image_url"`
 	Description    string            `json:"description"`
@@ -25,6 +25,6 @@ type ChatRoomWithPartisipants struct {
 }
 
 type AddParticipantRequest struct {
-	ChatRoomId int   `json:"chat_room_id" binding:"required"`
-	UserIds    []int `json:"user_ids" binding:"required"`
+	ChatRoomId string   `json:"chat_room_id" binding:"required"`
+	UserIds    []string `json:"user_ids" binding:"required"`
 }

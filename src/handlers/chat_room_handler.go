@@ -1,12 +1,15 @@
 package handlers
 
 import (
-	"fmt"
-	"myProfileApi/src/models"
-	"myProfileApi/src/schemas"
-	"myProfileApi/src/services"
-	"myProfileApi/src/utils"
+	"encoding/json"
 	"net/http"
+	"time"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
+	"github.com/AlfaSakan/my-profile-api.git/src/services"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
+	"github.com/AlfaSakan/my-profile-api.git/src/websocket"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -26,9 +29,6 @@ func (chatRoomHandler *ChatRoomHandler) GetAllChatRoom(ctx *gin.Context) {
 
 	user, _ := ctx.Get("User")
 	userId := user.(*models.User).UserId
-	if userId == 0 {
-		return
-	}
 
 	chatRooms, err := chatRoomHandler.chatRoomService.FindAllChatRoomByUserId(userId)
 	if err != nil {
@@ -46,39 +46,89 @@ func (chatRoomHandler *ChatRoomHandler) GetAllChatRoom(ctx *gin.Context) {
 	ctx.JSON(response.Status, response)
 }
 
-func (chatRoomHandler *ChatRoomHandler) PostChatRoom(ctx *gin.Context) {
-	var request schemas.ChatRoomRequest
-	response := new(schemas.Response)
+func (chatRoomHandler *ChatRoomHandler) WebSocketGetAllChatRoom(h *websocket.Hub) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userId := ctx.Param("UserId")
 
-	user, _ := ctx.Get("User")
-	userId := user.(*models.User).UserId
+		chatRooms, _ := chatRoomHandler.chatRoomService.FindAllChatRoomByUserId(userId)
 
-	request.UserId = int(userId)
+		if len(chatRooms) == 0 {
+			schema := schemas.ChatRoomWithPartisipants{
+				ChatRoomId:     "0",
+				ParticipantsId: &[]string{"0"},
+				Messages:       &[]models.Message{},
+				ImageUrl:       "",
+				Description:    "",
+				Name:           "",
+				Type:           "noreply",
+				CreatedAt:      time.Now().UnixMilli(),
+				UpdatedAt:      time.Now().UnixMilli(),
+			}
 
-	err := ctx.ShouldBindJSON(&request)
-	if err != nil {
-		for _, e := range err.(validator.ValidationErrors) {
-			response.Message = e.Error()
+			chatRooms = append(chatRooms, schema)
+		}
+
+		websocket.ServeWs(ctx, h, &chatRooms)
+	}
+}
+
+func (chatRoomHandler *ChatRoomHandler) PostChatRoom(h *websocket.Hub) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var request schemas.ChatRoomRequest
+		response := new(schemas.Response)
+
+		user, _ := ctx.Get("User")
+		userId := user.(*models.User).UserId
+
+		request.UserId = userId
+
+		err := ctx.ShouldBindJSON(&request)
+		if err != nil {
+			for _, e := range err.(validator.ValidationErrors) {
+				response.Message = e.Error()
+				response.Status = http.StatusBadRequest
+
+				ctx.JSON(response.Status, response)
+				return
+			}
+		}
+
+		chatRoom, errChatRoom := chatRoomHandler.chatRoomService.CreateChatRoom(request)
+		if errChatRoom != nil {
+			response.Message = errChatRoom.Error()
 			response.Status = http.StatusBadRequest
 
 			ctx.JSON(response.Status, response)
 			return
 		}
-	}
 
-	chatRoom, errChatRoom := chatRoomHandler.chatRoomService.CreateChatRoom(request)
-	if errChatRoom != nil {
-		response.Message = errChatRoom.Error()
-		response.Status = http.StatusBadRequest
+		addParticipantRequest := &schemas.AddParticipantRequest{
+			ChatRoomId: chatRoom.ChatRoomId,
+			UserIds:    *chatRoom.ParticipantsId,
+		}
 
+		messageModel := &models.Message{
+			ChatRoomId: chatRoom.ChatRoomId,
+			Type:       "Created Room",
+		}
+
+		message, _ := json.Marshal(messageModel)
+
+		data := map[string][]byte{
+			"message": message,
+			"id":      []byte(userId),
+		}
+
+		userRoom, _ := json.Marshal(data)
+
+		h.AddChatRoom <- addParticipantRequest
+		h.Broadcast <- userRoom
+
+		response.Data = &chatRoom
+		response.Message = "Created"
+		response.Status = http.StatusCreated
 		ctx.JSON(response.Status, response)
-		return
 	}
-
-	response.Data = &chatRoom
-	response.Message = "Created"
-	response.Status = http.StatusCreated
-	ctx.JSON(response.Status, response)
 }
 
 func (chatRoomHandler *ChatRoomHandler) PatchChatRoom(ctx *gin.Context) {
@@ -88,13 +138,9 @@ func (chatRoomHandler *ChatRoomHandler) PatchChatRoom(ctx *gin.Context) {
 	user, _ := ctx.Get("User")
 	userId := user.(*models.User).UserId
 
-	request.UserId = int(userId)
+	request.UserId = userId
 
-	chatRoomId := utils.ConvertParamToInt(ctx, "chatRoomId")
-
-	if chatRoomId == 0 {
-		return
-	}
+	chatRoomId := ctx.Param("chatRoomId")
 
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
@@ -128,12 +174,7 @@ func (chatRoomHandler *ChatRoomHandler) DeleteChatRoom(ctx *gin.Context) {
 	user, _ := ctx.Get("User")
 	userId := user.(*models.User).UserId
 
-	chatRoomId := utils.ConvertParamToInt(ctx, "chatRoomId")
-
-	if chatRoomId == 0 {
-		utils.ResponseBadRequest(ctx, response, fmt.Errorf("chat room id error"))
-		return
-	}
+	chatRoomId := ctx.Param("chatRoomId")
 
 	err := chatRoomHandler.chatRoomService.RemoveChatRoom(userId, chatRoomId)
 	if err != nil {
@@ -148,46 +189,45 @@ func (chatRoomHandler *ChatRoomHandler) DeleteChatRoom(ctx *gin.Context) {
 	ctx.JSON(response.Status, response)
 }
 
-func (ChatRoomHandler *ChatRoomHandler) PostAddParticipant(ctx *gin.Context) {
-	request := &schemas.AddParticipantRequest{}
-	response := &schemas.Response{}
+func (chatRoomHandler *ChatRoomHandler) PostAddParticipant(h *websocket.Hub) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		request := &schemas.AddParticipantRequest{}
+		response := &schemas.Response{}
 
-	err := ctx.ShouldBindJSON(request)
-	if err != nil {
-		utils.ResponseBadRequest(ctx, response, err)
-		return
+		err := ctx.ShouldBindJSON(request)
+		if err != nil {
+			utils.ResponseBadRequest(ctx, response, err)
+			return
+		}
+
+		user, _ := ctx.Get("User")
+		userId := user.(*models.User).UserId
+
+		participant, err := chatRoomHandler.participantService.FindUserAdmin(userId, request.ChatRoomId)
+
+		if participant == nil {
+			utils.ResponseBadRequest(ctx, response, err)
+			return
+		}
+
+		for _, userId := range request.UserIds {
+			chatRoomHandler.participantService.CreateParticipant(userId, request.ChatRoomId)
+		}
+
+		h.AddChatRoom <- request
+
+		response.Message = "OK"
+		response.Status = http.StatusOK
+		response.Data = ""
+		ctx.JSON(response.Status, response)
 	}
-
-	user, _ := ctx.Get("User")
-	userId := user.(*models.User).UserId
-
-	participant, err := ChatRoomHandler.participantService.FindUserAdmin(userId, request.ChatRoomId)
-
-	if participant == nil {
-		utils.ResponseBadRequest(ctx, response, err)
-		return
-	}
-
-	for _, userId := range request.UserIds {
-		ChatRoomHandler.participantService.CreateParticipant(userId, uint(request.ChatRoomId))
-	}
-
-	response.Message = "OK"
-	response.Status = http.StatusOK
-	response.Data = ""
-	ctx.JSON(response.Status, response)
 }
 
-func (ChatRoomHandler *ChatRoomHandler) GetChatRoomById(ctx *gin.Context) {
+func (chatRoomHandler *ChatRoomHandler) GetChatRoomById(ctx *gin.Context) {
 	response := &schemas.Response{}
-	chatRoomId := utils.ConvertParamToInt(ctx, "chatRoomId")
+	chatRoomId := ctx.Param("chatRoomId")
 
-	if chatRoomId == 0 {
-		utils.ResponseBadRequest(ctx, response, fmt.Errorf("error chat room id"))
-		return
-	}
-
-	chatRoom, err := ChatRoomHandler.chatRoomService.FindChatRoomById(chatRoomId)
+	chatRoom, err := chatRoomHandler.chatRoomService.FindChatRoomById(chatRoomId)
 
 	if err != nil {
 		utils.ResponseBadRequest(ctx, response, err)
@@ -197,5 +237,21 @@ func (ChatRoomHandler *ChatRoomHandler) GetChatRoomById(ctx *gin.Context) {
 	response.Message = "OK"
 	response.Status = http.StatusOK
 	response.Data = chatRoom
+	ctx.JSON(response.Status, response)
+}
+
+func (chatRoomHandler *ChatRoomHandler) GetParticipantsInChatRoom(ctx *gin.Context) {
+	response := &schemas.Response{}
+	chatRoomId := ctx.Param("chatRoomId")
+
+	users, err := chatRoomHandler.participantService.FindParticipantsList(chatRoomId)
+	if err != nil {
+		utils.ResponseBadRequest(ctx, response, err)
+		return
+	}
+
+	response.Message = "OK"
+	response.Status = http.StatusOK
+	response.Data = users
 	ctx.JSON(response.Status, response)
 }

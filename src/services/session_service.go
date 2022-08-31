@@ -1,13 +1,14 @@
 package services
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/repositories"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/repositories"
+	"github.com/AlfaSakan/my-profile-api.git/src/utils"
 )
 
 type ISessionService interface {
-	Login(uint, string) (*models.Session, error)
-	Logout(int) error
+	Login(userId string, userAgent string) (*models.Session, error)
+	Logout(sessionId string) error
 }
 
 type SessionService struct {
@@ -19,10 +20,11 @@ func NewSessionService(sessionRepository repositories.ISessionRepository, userRe
 	return &SessionService{sessionRepository, userRepository}
 }
 
-func (s *SessionService) Login(userId uint, userAgent string) (*models.Session, error) {
+func (s *SessionService) Login(userId string, userAgent string) (*models.Session, error) {
 	session := &models.Session{
-		UserId:    uint(userId),
+		UserId:    userId,
 		UserAgent: userAgent,
+		SessionId: utils.GenerateId(),
 	}
 
 	err := s.sessionRepository.CreateSession(session)
@@ -30,9 +32,9 @@ func (s *SessionService) Login(userId uint, userAgent string) (*models.Session, 
 	return session, err
 }
 
-func (s *SessionService) Logout(sessionId int) error {
+func (s *SessionService) Logout(sessionId string) error {
 	session := &models.Session{
-		SessionId: uint(sessionId),
+		SessionId: sessionId,
 	}
 
 	return s.sessionRepository.DeleteSession(session, sessionId)

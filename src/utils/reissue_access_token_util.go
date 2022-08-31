@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/repositories"
 	"time"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/repositories"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func ReIssueAccessToken(db *gorm.DB, refreshToken string) (string, *models.User)
 	}
 
 	data := claims["data"].(map[string]interface{})
-	sessionId := int(data["session_id"].(float64))
+	sessionId := data["session_id"].(string)
 
 	session := &models.Session{}
 	err = sessionRepository.FindSession(session, sessionId)

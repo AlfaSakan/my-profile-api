@@ -1,10 +1,11 @@
 package services
 
 import (
-	"myProfileApi/src/models"
-	"myProfileApi/src/repositories"
-	"myProfileApi/src/schemas"
 	"testing"
+
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/repositories"
+	"github.com/AlfaSakan/my-profile-api.git/src/schemas"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -18,7 +19,7 @@ const createUser = "CreateUser"
 const updateUser = "UpdateUser"
 
 var user = models.User{
-	UserId:      1,
+	UserId:      "1",
 	CountryCode: "+62",
 	PhoneNumber: "8123456789",
 	Name:        "Test",
@@ -40,7 +41,7 @@ func TestUserService_FindUserById(t *testing.T) {
 
 	userRepository.Mock.On(findUserById, 1).Return(user, nil)
 
-	result, err := userService.FindUserById(1)
+	result, err := userService.FindUserById("1")
 
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
@@ -79,7 +80,7 @@ func TestUserService_UpdateUser(t *testing.T) {
 
 	userRepository.Mock.On(updateUser, userModel, 1).Return(user, nil)
 
-	result, err := userService.UpdateUser(userRequest, 1)
+	result, err := userService.UpdateUser(userRequest, "1")
 
 	assert.Nil(t, err)
 	assert.NotNil(t, result)

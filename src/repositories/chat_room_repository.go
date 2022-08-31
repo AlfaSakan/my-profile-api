@@ -1,16 +1,16 @@
 package repositories
 
 import (
-	"myProfileApi/src/models"
+	"github.com/AlfaSakan/my-profile-api.git/src/models"
 
 	"gorm.io/gorm"
 )
 
 type IChatRoomRepository interface {
 	CreateChatRoom(*models.ChatRoom) (*models.ChatRoom, error)
-	FindChatRoomById(int) (models.ChatRoom, error)
-	RemoveChatRoomById(int) error
-	UpdateChatRoomById(*models.ChatRoom, int) error
+	FindChatRoomById(chatRoomId string) (models.ChatRoom, error)
+	RemoveChatRoomById(chatRoomId string) error
+	UpdateChatRoomById(chatRoomRequest *models.ChatRoom, chatRoomId string) error
 }
 
 type ChatRoomRepository struct {
@@ -27,17 +27,17 @@ func (chatRoomRepository *ChatRoomRepository) CreateChatRoom(chatRoom *models.Ch
 	return chatRoom, err
 }
 
-func (chatRoomRepository *ChatRoomRepository) FindChatRoomById(chatRoomId int) (models.ChatRoom, error) {
+func (chatRoomRepository *ChatRoomRepository) FindChatRoomById(chatRoomId string) (models.ChatRoom, error) {
 	var chatRoom models.ChatRoom
 
-	err := chatRoomRepository.db.First(&chatRoom, chatRoomId).Error
+	err := chatRoomRepository.db.Where(&models.ChatRoom{ChatRoomId: chatRoomId}).First(&chatRoom).Error
 
 	return chatRoom, err
 }
 
-func (chatRoomRepository *ChatRoomRepository) RemoveChatRoomById(chatRoomId int) error {
+func (chatRoomRepository *ChatRoomRepository) RemoveChatRoomById(chatRoomId string) error {
 	chatRoom := &models.ChatRoom{
-		ChatRoomId: uint(chatRoomId),
+		ChatRoomId: chatRoomId,
 	}
 
 	err := chatRoomRepository.db.Delete(chatRoom).Error
@@ -45,9 +45,9 @@ func (chatRoomRepository *ChatRoomRepository) RemoveChatRoomById(chatRoomId int)
 	return err
 }
 
-func (chatRoomRepository *ChatRoomRepository) UpdateChatRoomById(chatRoomRequest *models.ChatRoom, chatRoomId int) error {
+func (chatRoomRepository *ChatRoomRepository) UpdateChatRoomById(chatRoomRequest *models.ChatRoom, chatRoomId string) error {
 	chatRoom := &models.ChatRoom{
-		ChatRoomId: uint(chatRoomId),
+		ChatRoomId: chatRoomId,
 	}
 
 	err := chatRoomRepository.db.Where(chatRoom).Updates(chatRoomRequest).Error
